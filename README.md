@@ -1,6 +1,7 @@
+<div align="center">
+    <img alt="logo" src="public/brand/nowtime/icon-192.png" width="96px"/>
+</div>
 <h1 align="center">
-    <img alt="Logo" src="public/brand/nowtime/icon-192.png" width="96px"/>
-    
     Now Time
 </h1>
 
