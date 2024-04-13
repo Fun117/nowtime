@@ -9,6 +9,17 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "author": {
+    "name": "Fun117",
+    "url": "https://fun117.vercel.app/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fun117/nowtime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Fun117/nowtime/issues"
+  },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",

@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 const meta = {
 	title: 'Now Time',
-	description: "now time",
+	description: "This is a web application built using React and Next.js. The app displays a customizable clock and allows users to upload and set background images. It also features network status monitoring and error handling for offline scenarios.",
 	authors: {
 		name: 'Fun117',
 		url: 'https://github.com/Fun117'
