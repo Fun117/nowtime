@@ -13,7 +13,7 @@ const meta = {
 		url: 'https://github.com/Fun117'
 	},
 	Image: '/favicon.ico',
-	cardImage: '/icons/fun117/fun117_1080x1080.webp',
+	cardImage: '/brand/nowtime/icon-512.png',
 	robots: 'follow, index',	
 	url: getURL()
 };
