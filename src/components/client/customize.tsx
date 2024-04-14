@@ -47,9 +47,145 @@ import {
 
 import { AlignJustify, Maximize2, Minimize2, Settings, X } from 'lucide-react';
 import { _locales } from './_locales';
+import { CustomizeConfig_CarouselItem } from '../../../configs/customize.config';
 
-interface BackgroundImageUploaderProps {
-    onUpload: (imageUrl: string) => void;
+
+export interface SettingItem {
+    title: string;
+    contents: SettingContent[];
+}
+
+export interface SettingContent {
+    type: string;
+    key_label: string;
+    title: string;
+    default_value: string;
+    disabled: boolean;
+    select_items?: SelectItem[];
+}
+
+export type SelectItem = {
+    value: string;
+    label: string;
+    disabled?: boolean;
+};
+
+type Settings = {
+    [key: string]: string;
+};
+
+export const useSettings = () => {
+    const [cookies] = useCookies(['settings']);
+    const [settings, setSettings] = useState<Settings>({});
+    const contents = CustomizeConfig_CarouselItem[0].contents; // ここでcontentsを設定
+
+    useEffect(() => {
+        if (cookies.settings) {
+            if (typeof cookies.settings === 'object') {
+                try {
+                    const parsedSettings = JSON.parse(JSON.stringify(cookies.settings));
+                    setSettings(parsedSettings);
+                } catch (error) {
+                    console.error('Error parsing settings:', error);
+                }
+            }
+        }
+    }, [cookies.settings]);
+
+    const SettingGET = (key: string): string => {
+        const settingContent = contents.find(item => item.key_label === key);
+        
+        if (settingContent) {
+            if (settingContent.disabled) {
+                return settingContent.default_value;
+            }
+            return settings[settingContent.key_label] || settingContent.default_value;
+        }
+        
+        return ''; // 設定が見つからない場合は空文字列を返す
+    };
+
+    return {
+        SettingGET
+    };
+};
+
+function CarouselItemSettings() {
+    const [cookies, setCookie] = useCookies(['settings']);
+    const [settings, setSettings] = useState<Settings>({});
+
+    useEffect(() => {
+        if (cookies.settings) {
+            if (typeof cookies.settings === 'object') {
+                try {
+                    const parsedSettings = JSON.parse(JSON.stringify(cookies.settings));
+                    setSettings(parsedSettings);
+                } catch (error) {
+                    console.error('Error parsing settings:', error);
+                }
+            }
+        }
+    }, [cookies.settings]);    
+    
+    const saveSettingsToCookie = (newSettings: Settings) => {
+        try {
+            const mergedSettings = { ...settings, ...newSettings };
+            const settingsString = JSON.stringify(mergedSettings);
+            setCookie('settings', settingsString, { path: '/', sameSite: 'lax' });
+            setSettings(mergedSettings);
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
+    };
+
+    const handleChange = (key: string, value: string) => {
+        const newSettings = { ...settings, [key]: value };
+        saveSettingsToCookie(newSettings);
+    };
+
+    return (
+        <>
+            {CustomizeConfig_CarouselItem.map((group, groupIndex) => (
+                <CarouselItem key={groupIndex}>
+                    <div className="flex justify-center items-center w-full h-full max-h-52 p-1">
+                        <Card className='relative w-full h-full'>
+                            <CardHeader>
+                                <CardTitle>{_locales(group.title)}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className='grid grid-cols-3 gap-4'>
+                                    {group.contents?.map((content, contentIndex) => (
+                                        <li key={contentIndex} className='flex flex-row flex-wrap justify-start items-center w-full p-2'>
+                                            <h2 className='mr-1'>{_locales(content.title)}</h2>
+                                            <Select
+                                                defaultValue={content.disabled ? content.default_value : settings[content.key_label] || content.default_value}
+                                                onValueChange={(value) => handleChange(content.key_label, value)}
+                                                disabled={content.disabled}
+                                            >
+                                                <SelectTrigger className="w-[180px]">
+                                                    <SelectValue placeholder={_locales(`${content.title}を選択する`)} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        <SelectLabel>{_locales(content.title)}</SelectLabel>
+                                                        {content.select_items?.map((selectItem, sIdx) => (
+                                                            <SelectItem key={sIdx} value={selectItem.value} disabled={content.disabled || false}>
+                                                                {_locales(selectItem.label)}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </CarouselItem>
+            ))}
+        </>
+    );
 }
 
 export function MainContents({ children }: { children?: React.ReactNode}) {
@@ -146,36 +282,7 @@ export function MainContents({ children }: { children?: React.ReactNode}) {
                                             </Card>
                                         </div>
                                     </CarouselItem>
-                                    <CarouselItem>
-                                        <div className="flex justify-center items-center w-full h-full max-h-52 p-1">
-                                            <Card className='relative w-full h-full'>
-                                                <CardHeader>
-                                                    <CardTitle>{_locales(`アニメーション`)}</CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <ul className='grid grid-cols-3 gap-4'>
-                                                        <li className='flex flex-row flex-wrap justify-start items-center w-full p-2'>
-                                                            <h1 className=' mr-1'>{_locales(`テキスト`)}</h1>
-                                                            <Select defaultValue='none' disabled>
-                                                                <SelectTrigger className="w-[180px]">
-                                                                    <SelectValue placeholder={_locales(`アニメーションを選択する`)} />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectGroup>
-                                                                        <SelectLabel>{_locales(`アニメーション`)}</SelectLabel>
-                                                                        <SelectItem value="none">none</SelectItem>
-                                                                        <SelectItem value="jump">jump</SelectItem>
-                                                                        <SelectItem value="spin">spin</SelectItem>
-                                                                        <SelectItem value="bounce">bounce</SelectItem>
-                                                                    </SelectGroup>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </li>
-                                                    </ul>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                    </CarouselItem>
+                                    {CarouselItemSettings()}
                                 </CarouselContent>
                                 <CarouselPrevious />
                                 <CarouselNext />
@@ -215,23 +322,23 @@ export function MainContents({ children }: { children?: React.ReactNode}) {
                     <div className='pt-5 h-full overflow-y-auto'>
                         <ul className='flex flex-col justify-start items-center w-full py-2 *:flex *:flex-col *:justify-start *:items-center *:w-full'>
                             <li className=''>
-                                <div className="flex flex-row items-center space-x-2 w-full">
-                                    <Switch id="developer-mode" className='shadow-md' disabled />
+                                <div className="flex flex-row justify-between items-center space-x-2 w-full">
                                     <Label htmlFor="developer-mode">{_locales(`デベロッパーモード`)}</Label>
+                                    <Switch id="developer-mode" className='shadow-md' disabled />
                                 </div>
                                 <Separator className="my-5" />
                             </li>
                             <li className=''>
-                                <div className="flex flex-row items-center space-x-2 w-full">
-                                    <Switch id="airplane-mode" className='shadow-md' disabled />
+                                <div className="flex flex-row justify-between items-center space-x-2 w-full">
                                     <Label htmlFor="airplane-mode">{_locales(`サウンド効果`)}</Label>
+                                    <Switch id="airplane-mode" className='shadow-md' disabled />
                                 </div>
                                 <Separator className="my-5" />
                             </li>
                             <li className=''>
-                                <div className="flex flex-row items-center space-x-2 w-full">
-                                    <Switch id="airplane-mode" className='shadow-md' defaultChecked disabled />
+                                <div className="flex flex-row justify-between items-center space-x-2 w-full">
                                     <Label htmlFor="airplane-mode">{_locales(`影`)}</Label>
+                                    <Switch id="airplane-mode" className='shadow-md' defaultChecked disabled />
                                 </div>
                             </li>
                         </ul>
